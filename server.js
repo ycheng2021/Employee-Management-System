@@ -48,41 +48,78 @@ function init() {
 }
 
 function viewAllDepts() {
-
+    // pulls the data from department database
 }
 
 function viewAllRoles() {
-
+    // pulls the data from employee_role database
 }
 
 function viewAllEmployees() {
-
+    // pulls the data from the employee database
 }
 
 function addDepartment() {
-
+    inquirer
+    .prompt([
+        {
+            title: 'input',
+            name: 'addDept',
+            message: 'What is the name of the department?',
+        }
+    ])
+    .then(answers => {
+        // need to send the answer into the department database
+    })
 }
 
 function addRole() {
+    inquirer
+    .prompt([
+        {
+            title: 'input',
+            name: 'roleName',
+            message: 'What is the name of the role?'
+        },
+        {
+            title: 'input',
+            name: 'roleSalary',
+            message: 'What is the salary of the role?'
+        },
+        {
+            title: 'list',
+            name: 'roleDepartment',
+            // need to get the options from the department database
+            choices: []
+        }
 
+    ])
 }
 
 function addEmployee() {
-
+    // inquirer to ask the employee questions
 }
 
 function updateEmpRole() {
-
+    // inquirer to update employee role in the database
 }
 
 const db = mysql.createConnection(
     {
         host: "localhost",
-        // MySQL username,
         user: "root",
-        // TODO: Add MySQL password here
-        password: "",
+        password: "password",
         database: "movies_db",
     },
     console.log(`Connected to the employee database.`)
 );
+
+app.use((req, res) => {
+    res.status(404).end();
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+
+init();
