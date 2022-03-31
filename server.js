@@ -10,12 +10,16 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-const questions = [
+// connect to database
+const db = mysql.createConnection(
     {
-        type: 'input',
-        message: ""
-    }
-]
+        host: "localhost",
+        user: "root",
+        password: "password",
+        database: "movies_db",
+    },
+    console.log(`Connected to the employee database.`)
+);
 
 function init() {
     inquirer
@@ -49,6 +53,20 @@ function init() {
 
 function viewAllDepts() {
     // pulls the data from department database
+    app.get("/api/department", (req,res) => {
+        const sql = `SELECT department.id AS id, department.department_name AS department `
+        
+        db.query(sql, (err, rows) => {
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            res.json({
+                message: "success",
+                data: rows,
+            });
+        });
+    })
 }
 
 function viewAllRoles() {
@@ -70,6 +88,21 @@ function addDepartment() {
     ])
     .then(answers => {
         // need to send the answer into the department database
+        app.post("/api/new-deparment", (req, res) => {
+            const sql = `INSERT INTO department(department_name) VALUES(?)`
+            const params = answers.addDept
+
+            db.query(sql, params, (err, result) => {
+                if (err) {
+                    res.status(400).json({ error: err.message });
+                    return;
+                }
+                res.json({
+                    message: "success",
+                    data: body,
+                });
+            });
+        })
     })
 }
 
@@ -94,25 +127,33 @@ function addRole() {
         }
 
     ])
+    .then(answers => {
+        app.post("/api/employee_roles", (req, res) => {
+            const sql = `INSERT INTO employee_role(title) VALUES(?), employee_role(salary) VALUES(?), employee_role(department_id) VALUES(?) `
+            const params = [answers.roleName, answers.roleSalary, answers.roleDepartment]
+            
+            db.query(sql, params, (err, result) => {
+                if (err) {
+                    res.status(400).json({ error: err.message });
+                    return;
+                }
+                res.json({
+                    message: "success",
+                    data: body,
+                });
+            });
+        })
+    })
 }
 
 function addEmployee() {
     // inquirer to ask the employee questions
+
 }
 
 function updateEmpRole() {
     // inquirer to update employee role in the database
 }
-
-const db = mysql.createConnection(
-    {
-        host: "localhost",
-        user: "root",
-        password: "password",
-        database: "movies_db",
-    },
-    console.log(`Connected to the employee database.`)
-);
 
 app.use((req, res) => {
     res.status(404).end();
