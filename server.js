@@ -33,7 +33,7 @@ function mainMenu() {
         ],
       },
     ])
-    .then((answers) => {
+    .then(answers => {
       switch (answers.viewOptions) {
         case "View All Departments":
           return viewAllDepts();
@@ -57,7 +57,7 @@ function mainMenu() {
 
 function viewAllDepts() {
   // pulls the data from department database
-  const sql = `SELECT department.id AS id, department.department_name AS department ORDER BY department.department_name`;
+  const sql = `SELECT id AS id, department.department_name AS department FROM department ORDER BY department.department_name`;
 
   db.query(sql, (err, rows) => {
     if (err) {
@@ -69,16 +69,24 @@ function viewAllDepts() {
 }
 
 function viewAllRoles() {
-  // pulls the data from employee_role database
-  const sql = `SELECT * FROM employee_role`
-
-  db.query(sql, (err, rows) => {
-    if (err) {
-      console.log(err);
-      return;
+  db.query(`SELECT department.department_name FROM department`, (err, result) => {
+    const getDepartments = []
+    for (let i=0; i<result.length; i++) {
+      getDepartments.push(result[i]);
     }
-    console.table(rows)
+    console.info(getDepartments)
   })
+
+  // // pulls the data from employee_role database
+  // const sql = `SELECT * FROM employee_role`
+
+  // db.query(sql, (err, rows) => {
+  //   if (err) {
+  //     console.log(err);
+  //     return;
+  //   }
+  //   console.table(rows)
+  // })
 }
 
 function viewAllEmployees() {
@@ -111,14 +119,6 @@ function addDepartment() {
 }
 
 function addRole() {
-  const getDepartments = db.query(`SELECT department_name FROM department`, (err, result) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    return result;
-  })
-
   inquirer
     .prompt([
       {
@@ -134,6 +134,7 @@ function addRole() {
       {
         title: "list",
         name: "roleDepartment",
+        message: "Which department is the role?",
         // need to get the options from the department database
         choices: getDepartments
       },
