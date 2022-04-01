@@ -50,7 +50,7 @@ function mainMenu() {
         case "Update Employee Role":
           return updateEmpRole();
         default:
-          return;
+          process.exit()
       }
     });
 }
@@ -65,28 +65,22 @@ function viewAllDepts() {
       return;
     }
     console.table(rows);
+    mainMenu();
   });
 }
 
 function viewAllRoles() {
-  db.query(`SELECT department.department_name FROM department`, (err, result) => {
-    const getDepartments = []
-    for (let i=0; i<result.length; i++) {
-      getDepartments.push(result[i]);
+   // pulls the data from employee_role database
+  const sql = `SELECT * FROM employee_role`
+
+  db.query(sql, (err, rows) => {
+    if (err) {
+      console.log(err);
+      return;
     }
-    console.info(getDepartments)
+    console.table(rows)
+    mainMenu();
   })
-
-  // // pulls the data from employee_role database
-  // const sql = `SELECT * FROM employee_role`
-
-  // db.query(sql, (err, rows) => {
-  //   if (err) {
-  //     console.log(err);
-  //     return;
-  //   }
-  //   console.table(rows)
-  // })
 }
 
 function viewAllEmployees() {
@@ -103,7 +97,7 @@ function addDepartment() {
         message: "What is the name of the department?",
       },
     ])
-    .then((answers) => {
+    .then(answers => {
       // need to send the answer into the department database
       const sql = `INSERT INTO department(department_name) VALUES(?)`;
       const params = answers.addDept;
@@ -114,33 +108,43 @@ function addDepartment() {
           return;
         }
         console.info(`added ${answers.addDept} to the database`);
+        mainMenu();
       });
     });
 }
 
 function addRole() {
+  const getDepartments = []
+  db.query(`SELECT department.department_name, department.id FROM department`, (err, result) => {
+    
+    function departmentArray() {
+      for (let i=0; i<result.length; i++) {
+        getDepartments.push({name: result[i].department_name, value: result[i].id});
+      }
+      return getDepartments
+    }
+
   inquirer
     .prompt([
       {
-        title: "input",
+        type: "input",
         name: "roleName",
         message: "What is the name of the role?",
       },
       {
-        title: "input",
+        type: "input",
         name: "roleSalary",
         message: "What is the salary of the role?",
       },
       {
-        title: "list",
+        type: "list",
         name: "roleDepartment",
         message: "Which department is the role?",
-        // need to get the options from the department database
-        choices: getDepartments
+        choices: departmentArray()
       },
     ])
-    .then((answers) => {
-      const sql = `INSERT INTO employee_role(title) VALUES(?), employee_role(salary) VALUES(?), employee_role(department_id) VALUES(?) `;
+    .then(answers => {
+      const sql = `INSERT INTO employee_role (title, salary, department_id) VALUES(?, ?, ?) `;
       const params = [
         answers.roleName,
         answers.roleSalary,
@@ -153,8 +157,10 @@ function addRole() {
           return;
         }
         console.info(`added ${answers.roleName} to the database`)
+        mainMenu();
       });
     });
+  })
 }
 
 function addEmployee() {
@@ -186,7 +192,7 @@ function addEmployee() {
         choices: []
       }
     ])
-    .then((answers) => {
+    .then(answers => {
       const sql = `INSERT INTO employee_role(title) VALUES(?), employee_role(salary) VALUES(?), employee_role(department_id) VALUES(?) `;
       const params = [
         answers.roleName,
@@ -200,6 +206,7 @@ function addEmployee() {
           return;
         }
         console.info(`added ${answers.roleName} to the database`)
+        mainMenu();
       });
     });
 }
@@ -224,6 +231,9 @@ function updateEmpRole() {
     }
     // console.info("Updated employee's role")
   ])
+  .then(answers => {
+    const sql = ``;
+  }) 
 }
 
 function init() {
