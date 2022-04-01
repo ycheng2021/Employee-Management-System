@@ -92,7 +92,7 @@ function addDepartment() {
   inquirer
     .prompt([
       {
-        title: "input",
+        type: "input",
         name: "addDept",
         message: "What is the name of the department?",
       },
@@ -168,24 +168,24 @@ function addEmployee() {
   inquirer
     .prompt([
       {
-        title: "input",
+        type: "input",
         name: "firstName",
         message: "What is employee's first name?",
       },
       {
-        title: "input",
+        type: "input",
         name: "lastName",
         message: "What is employee's last name?",
       },
       {
-        title: "list",
+        type: "list",
         name: "empRole",
         message: "What is the employee's role?",
         // need to get the options from the department database
         choices: []
       },
       {
-        title: "list",
+        type: "list",
         name: "empManager",
         message: "What is the employee's manager?",
         // need to get the names of the manager
@@ -193,11 +193,12 @@ function addEmployee() {
       }
     ])
     .then(answers => {
-      const sql = `INSERT INTO employee_role(title) VALUES(?), employee_role(salary) VALUES(?), employee_role(department_id) VALUES(?) `;
+      const sql = `INSERT INTO employee_role (first_name, last_name , employee_role, manager_id) VALUES(?, ?, ?, ?)`;
       const params = [
-        answers.roleName,
-        answers.roleSalary,
-        answers.roleDepartment,
+        answers.firstName,
+        answers.lastName,
+        answers.empRole,
+        answers.empManager
       ];
 
       db.query(sql, params, (err, result) => {
@@ -216,14 +217,14 @@ function updateEmpRole() {
   inquirer
   .prompt([
     {
-      title: "list",
+      type: "list",
       name: "pickEmployee",
       message: "Which employee's role would you like to update?",
       // get all the employee names here
       choices: []
     },
     {
-      title: "list",
+      type: "list",
       name: "newRole",
       message: "What role do you want to reassign for the selected employee?",
       // get all the role options here
