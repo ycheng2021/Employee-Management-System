@@ -1,7 +1,6 @@
 // Import and require mysql2
 const mysql = require("mysql2");
 const inquirer = require("inquirer");
-const { all } = require("express/lib/application");
 require("console.table");
 
 // connect to database
@@ -175,7 +174,7 @@ function addEmployee() {
     for (let i=0; i<result.length; i++) {
       getTitle.push({name: result[i].title, value: result[i].id})
     }
-    const getManager = ['null'];
+    const getManager = ['none'];
     db.query(`SELECT * FROM employee`, (err, result) => {
       if (err) throw err;
       for (let j=0; j<result.length; j++) {
@@ -207,12 +206,12 @@ function addEmployee() {
           message: "What is the employee's manager?",
           // need to get the names of the manager
           choices: getManager,
-          default: 'null'
+          default: 'none'
         }
       ])
       .then(answers => {
         const sql = `INSERT INTO employee (first_name, last_name , role_id, manager_id) VALUES(?, ?, ?, ?)`;
-        if (answers.empManager === 'null') {
+        if (answers.empManager === 'none') {
           answers.empManager = null
         }
         const params = [
