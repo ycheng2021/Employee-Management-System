@@ -72,7 +72,7 @@ function viewAllDepts() {
 
 function viewAllRoles() {
    // pulls the data from employee_role database
-  const sql = `SELECT * FROM employee_role JOIN department ON employee_role.department_id = department.id`
+  const sql = `SELECT er.id, er.title, er.salary, er.department_id, d.department_name FROM employee_role er JOIN department d ON er.department_id = d.id`
 
   db.query(sql, (err, rows) => {
     if (err) {
@@ -87,7 +87,7 @@ function viewAllRoles() {
 // id fn ln title department salary manager
 function viewAllEmployees() {
   // pulls the data from the employee database
-  const sql = `SELECT * FROM employee JOIN employee_role ON employee.role_id = employee_role.id`
+  const sql = `SELECT e.id, e.first_name, e.last_name, e.role_id, er.title, er.salary, e.manager_id, er.department_id FROM employee e JOIN employee_role er ON e.role_id = er.id ORDER BY e.first_name`
 
   db.query(sql, (err, rows) => {
     if (err) {
@@ -171,12 +171,12 @@ function addRole() {
 
 function addEmployee() {
   const getTitle = [];
-  db.query(`SELECT employee_role.title, employee_role.id FROM employee_role`, (err, result) => {
+  db.query(`SELECT er.id, er.title FROM employee_role er`, (err, result) => {
     for (let i=0; i<result.length; i++) {
       getTitle.push({name: result[i].title, value: result[i].id})
     }
-    const getManager = [];
-    db.query(`SELECT employee.first_name, employee.last_name FROM employee LEFT JOIN employee_role ON employee_role.id = employee.manager_id`, (err, result) => {
+    const getManager = ['null'];
+    db.query(`SELECT * FROM employee`, (err, result) => {
       if (err) throw err;
       for (let j=0; j<result.length; j++) {
         getManager.push({name: result[j].first_name + ' ' + result[j].last_name, value: result[j].id})
@@ -206,18 +206,21 @@ function addEmployee() {
           name: "empManager",
           message: "What is the employee's manager?",
           // need to get the names of the manager
-          choices: getManager
+          choices: getManager,
+          default: 'null'
         }
       ])
       .then(answers => {
         const sql = `INSERT INTO employee (first_name, last_name , role_id, manager_id) VALUES(?, ?, ?, ?)`;
+        if (answers.empManager === 'null') {
+          answers.empManager = null
+        }
         const params = [
           answers.firstName,
           answers.lastName,
           answers.empRole,
           answers.empManager
         ];
-
         db.query(sql, params, (err, result) => {
           if (err) {
             console.log(err)
@@ -239,7 +242,7 @@ function updateEmpRole() {
       employeeNames.push({name: result[i].first_name + ' ' + result[i].last_name, value: result[i].id})
     }
     const allRoles = [];
-    db.query(`SELECT title FROM employee_role`, (err, result) => {
+    db.query(`SELECT id, title FROM employee_role`, (err, result) => {
     for (let j=0; j<result.length; j++) {
       allRoles.push({name: result[j].title, value: result[j].id})
     }
@@ -263,7 +266,7 @@ function updateEmpRole() {
         // console.info("Updated employee's role")
       ])
       .then(answers => {
-        const sql = `UPDATE employee SET role_id = ? WHERE id = ?`;
+        const sql = `UPDATE employee SET employee.role_id = ? WHERE employee.id = ?`;
         const params = [
           answers.newRole,
           answers.pickEmployee
