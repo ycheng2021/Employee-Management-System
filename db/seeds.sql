@@ -9,7 +9,7 @@ VALUES ("Accounting"),
 INSERT INTO employee_role(title, salary, department_id)
 VALUES ("Accountant", 90000, 1),
        ("Lead Engineer", 130000, 2),
-       ("Legal Lead", 80000, 4),
+       ("Legal Lead", 120000, 4),
        ("Legal Advisor", 100000, 4),
        ("Sales Manager", 80000, 5),
        ("Sales Associate", 50000, 5),
