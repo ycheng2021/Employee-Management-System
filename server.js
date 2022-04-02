@@ -1,6 +1,7 @@
 // Import and require mysql2
 const mysql = require("mysql2");
 const inquirer = require("inquirer");
+const { all } = require("express/lib/application");
 require("console.table");
 
 // connect to database
@@ -86,7 +87,7 @@ function viewAllRoles() {
 // id fn ln title department salary manager
 function viewAllEmployees() {
   // pulls the data from the employee database
-  const sql = `SELECT * FROM employee`
+  const sql = `SELECT * FROM employee JOIN employee_role ON employee.role_id = employee_role.id`
 
   db.query(sql, (err, rows) => {
     if (err) {
@@ -125,7 +126,7 @@ function addDepartment() {
 
 function addRole() {
   const getDepartments = []
-  db.query(`SELECT department.department_name, department.id FROM department`, (err, result) => {
+  db.query(`SELECT department_name, id FROM department`, (err, result) => {
     for (let i=0; i<result.length; i++) {
       getDepartments.push({name: result[i].department_name, value: result[i].id});
     }
@@ -170,16 +171,17 @@ function addRole() {
 
 function addEmployee() {
   const getTitle = [];
-    db.query(`SELECT employee_role.title, employee_role.id FROM employee_role`, (err, result) => {
-      for (let i=0; i<result.length; i++) {
-        getTitle.push({name: result[i].title, value: result[i].id})
-      }
-    const getManager= [];
-    db.query(`SELECT employee.first_name, employee.manager_id FROM employee`, (err, result) => {
+  db.query(`SELECT employee_role.title, employee_role.id FROM employee_role`, (err, result) => {
+    for (let i=0; i<result.length; i++) {
+      getTitle.push({name: result[i].title, value: result[i].id})
+    }
+    const getManager = [];
+    db.query(`SELECT employee.first_name, employee.last_name FROM employee LEFT JOIN employee_role ON employee_role.id = employee.manager_id`, (err, result) => {
+      if (err) throw err;
       for (let j=0; j<result.length; j++) {
-        getManager.push({name: result[j].first_name, value: result[j].id})
+        getManager.push({name: result[j].first_name + ' ' + result[j].last_name, value: result[j].id})
       }
-    // inquirer to ask the employee questions
+  
     inquirer
       .prompt([
         {
@@ -221,36 +223,62 @@ function addEmployee() {
             console.log(err)
             return;
           }
-          console.info(`added ${answers.roleName} to the database`)
+          console.info(`added ${answers.firstName} to the database`)
           mainMenu();
         });
       });
     });
-  })
+  });
 }
 
 function updateEmpRole() {
-  // inquirer to update employee role in the database
-  inquirer
-  .prompt([
-    {
-      type: "list",
-      name: "pickEmployee",
-      message: "Which employee's role would you like to update?",
-      // get all the employee names here
-      choices: []
-    },
-    {
-      type: "list",
-      name: "newRole",
-      message: "What role do you want to reassign for the selected employee?",
-      // get all the role options here
-      choices: []
+  const employeeNames = [];
+  db.query(`SELECT * FROM employee`, (err, result) => {
+    if (err) throw err;
+    for (let i=0; i<result.length; i++) {
+      employeeNames.push({name: result[i].first_name + ' ' + result[i].last_name, value: result[i].id})
     }
-    // console.info("Updated employee's role")
-  ])
-  .then(answers => {
-    const sql = ``;
+    const allRoles = [];
+    db.query(`SELECT title FROM employee_role`, (err, result) => {
+    for (let j=0; j<result.length; j++) {
+      allRoles.push({name: result[j].title, value: result[j].id})
+    }
+    // inquirer to update employee role in the database
+      inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "pickEmployee",
+          message: "Which employee's role would you like to update?",
+          // get all the employee names here
+          choices: employeeNames
+        },
+        {
+          type: "list",
+          name: "newRole",
+          message: "What role do you want to reassign for the selected employee?",
+          // get all the role options here
+          choices: allRoles
+        }
+        // console.info("Updated employee's role")
+      ])
+      .then(answers => {
+        const sql = `UPDATE employee SET role_id = ? WHERE id = ?`;
+        const params = [
+          answers.newRole,
+          answers.pickEmployee
+        ];
+
+        db.query(sql, params, (err, result) => {
+          if (err) {
+            console.log(err)
+            return;
+          }
+          console.info(`updated employee in the database`)
+          mainMenu();
+        });
+      })
+    })
   }) 
 }
 
