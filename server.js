@@ -71,7 +71,7 @@ function viewAllDepts() {
 
 function viewAllRoles() {
    // pulls the data from employee_role database
-  const sql = `SELECT er.id, er.title, er.salary, er.department_id, d.department_name FROM employee_role er JOIN department d ON er.department_id = d.id`
+  const sql = `SELECT er.id, er.title, er.salary, d.department_name AS department FROM employee_role er JOIN department d ON er.department_id = d.id`
 
   db.query(sql, (err, rows) => {
     if (err) {
@@ -86,7 +86,7 @@ function viewAllRoles() {
 // id fn ln title department salary manager
 function viewAllEmployees() {
   // pulls the data from the employee database
-  const sql = `SELECT e.id, e.first_name, e.last_name, e.role_id, er.title, er.salary, e.manager_id, er.department_id FROM employee e JOIN employee_role er ON e.role_id = er.id ORDER BY e.first_name`
+  const sql = `SELECT e.id, e.first_name, e.last_name, er.title AS role, er.salary, d.department_name AS department, m.first_name AS manager FROM employee e LEFT JOIN employee_role er ON e.role_id = er.id LEFT JOIN department d ON er.department_id = d.id LEFT JOIN employee m ON m.id = e.manager_id ORDER BY e.first_name`
 
   db.query(sql, (err, rows) => {
     if (err) {
