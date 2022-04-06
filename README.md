@@ -36,7 +36,7 @@ npm run start
 This application does not have a license.
 
 ## Questions
-Github link: https://github.com/ycheng2021
+Github link: https://github.com/ycheng2021/Employee-Management-System
 
 Video Link: https://drive.google.com/file/d/1qmcwJtQlaLYJ8zfjktN-QoPebJeilGh4/view
 
